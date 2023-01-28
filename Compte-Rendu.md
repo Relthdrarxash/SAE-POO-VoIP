@@ -27,6 +27,8 @@
   - [Appel Normal](#appel-normal)
   - [Appel refusé](#appel-refusé)
   - [Double Appel](#double-appel)
+- [Gestion de projet](#gestion-de-projet)
+  - [Gantt](#gantt)
 - [Evolutions possibles](#evolutions-possibles)
 - [TODO](#todo)
 
@@ -181,6 +183,26 @@ sequenceDiagram
     Note over Client B: Mise en écoute port 5001
 ```
 
+## Gestion de projet
+
+### Gantt
+
+```mermaid
+gantt
+    title Conception d'un client de téléphonie
+    dateFormat  YYYY-MM-DD
+    section Serveur
+        Conception de l'architecture:active, 2021-01-01,2021-01-10
+        Implémentation des fonctionnalités de base:active, 2021-01-11,2021-01-25
+        Test et débogage:active, 2021-01-26,2021-02-01
+    section Client
+        Conception de l'interface utilisateur:active, 2021-02-01,2021-02-10
+        Implémentation des fonctionnalités de base:active, 2021-02-11,2021-03-01
+        Test et débogage:active, 2021-03-02,2021-03-15
+    section Fin
+        Présentation :active, 2021-03-16,2021-03-20
+```
+
 ## Evolutions possibles
 
 - Ajout d'une fonctionnalité de chat en direct pendant un appel: Il serait possible d'ajouter une fonctionnalité de chat en direct pendant un appel, qui permettrait aux utilisateurs de communiquer par écrit en plus de parler.
@@ -201,3 +223,4 @@ sequenceDiagram
 - Faire un compte rendu de gestion de projet (Gantt, ce qu'on aurait pu faire de mieux, ce qu'il s'est mal passé)
 - Dire ce qu'on a aimé ou pas dans le projet
 - Dire qui a fait quoi
+- Pour Gantt, dire ce qui allait ou pas, ce qui nous a pris le plus de temps etc
