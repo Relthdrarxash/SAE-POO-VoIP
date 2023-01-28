@@ -27,6 +27,8 @@
   - [Appel Normal](#appel-normal)
   - [Appel refusé](#appel-refusé)
   - [Double Appel](#double-appel)
+- [Evolutions possibles](#evolutions-possibles)
+- [TODO](#todo)
 
  <div style='page-break-before: always;' />
 
@@ -172,3 +174,22 @@ sequenceDiagram
     Note over Client A: Mise en écoute port 5001
     Note over Client B: Mise en écoute port 5001
 ```
+
+## Evolutions possibles
+
+- Ajout d'une fonctionnalité de chat en direct pendant un appel: Il serait possible d'ajouter une fonctionnalité de chat en direct pendant un appel, qui permettrait aux utilisateurs de communiquer par écrit en plus de parler.
+
+- Ajout d'une fonctionnalité de partage d'écran: Il serait possible d'ajouter une fonctionnalité de partage d'écran pour permettre aux utilisateurs de partager leur écran avec les autres utilisateurs en cours d'appel.
+
+- Support de plusieurs utilisateurs en appel simultanément: Il serait possible d'ajouter une fonctionnalité de conférence téléphonique pour permettre à plusieurs utilisateurs de participer à un appel simultanément.
+
+- Ajout de fonctionnalités de sécurité: Il serait possible d'ajouter des fonctionnalités de sécurité pour protéger les communications, comme la chiffrement de bout en bout pour garantir la confidentialité des conversations.
+
+- Ajout de fonctionnalités de personnalisation: Il serait possible d'ajouter des fonctionnalités de personnalisation pour permettre aux utilisateurs de personnaliser l'apparence de l'application, comme changer les couleurs, les polices, etc.
+
+## TODO
+
+- Décrire le fonctionnement avec des Screenshots des applications aux différentes étapes
+- Repasser sur les fonctionnalités pour vérifier que tout est correct et bien décrit
+- Décrire les threads et leur gestion
+- Faire un compte rendu de gestion de projet (Gantt, ce qu'on aurait pu faire de mieux, ce qu'il s'est mal passé)
