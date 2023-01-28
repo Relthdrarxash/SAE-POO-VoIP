@@ -91,6 +91,8 @@
 
 Le serveur est en écoute sur le port 10000 par défaut.
 
+ <div style='page-break-before: always;' />
+
 ### Appel Normal
 
 ```mermaid
@@ -119,6 +121,8 @@ sequenceDiagram
     Note over Client B: Mise en écoute port 5001
 ```
 
+ <div style='page-break-before: always;' />
+
 ### Appel refusé
 
 ```mermaid
@@ -139,6 +143,8 @@ sequenceDiagram
     Client B-->>Client A: UDP | "REJECT"
     Note over Client A: Mise en écoute port 5001
 ```
+
+ <div style='page-break-before: always;' />
 
 ### Double Appel
 
@@ -193,3 +199,5 @@ sequenceDiagram
 - Repasser sur les fonctionnalités pour vérifier que tout est correct et bien décrit
 - Décrire les threads et leur gestion
 - Faire un compte rendu de gestion de projet (Gantt, ce qu'on aurait pu faire de mieux, ce qu'il s'est mal passé)
+- Dire ce qu'on a aimé ou pas dans le projet
+- Dire qui a fait quoi
