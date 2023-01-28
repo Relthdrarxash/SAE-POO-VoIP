@@ -311,7 +311,7 @@ class Client(tk.Tk):
                 f"Error rejecting call with {caller_name}: {caller_name} does not exist or is offline\n",
                 "avertissement",
             )
-
+        self.listening_for_calls = True
         self.listen_for_call_requests()
 
     def transmit_audio(self, caller_ip: str) -> None:
@@ -362,6 +362,7 @@ class Client(tk.Tk):
                 self.udp_socket.sendto("CLOSE".encode("utf-8"), (self.caller_ip, 5001))
             self.log_text.insert(tk.END, "Appel terminé\n")
             self.btn_raccrocher["state"] = tk.DISABLED
+            self.listening_for_calls = True
             threading.Thread(target=self.listen_for_call_requests)
 
     def close(self) -> None:
