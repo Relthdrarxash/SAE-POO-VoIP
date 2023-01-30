@@ -180,9 +180,10 @@ class Server:
 
                 client.send(json.dumps(response).encode())
 
-        except:
+        except Exception as e:
             try:
                 # Handle any exceptions that may occur while handling the client's request
+                print(e)
                 self.delete_user(data["name"])
             except:
                 pass

@@ -396,8 +396,11 @@ class Client(tk.Tk):
             data = json.dumps(
                 {"command": "DISCONNECT", "name": self.client_name}
             ).encode("utf-8")
-            self.server_socket.sendto(data, (self.server_ip, self.server_port))
-            self.server_socket.close()
+            try :
+                self.server_socket.sendto(data, (self.server_ip, self.server_port))
+                self.server_socket.close()
+            except:
+                pass
         self.log_text.insert(tk.END, "Déconnexion du serveur\n", "avertissement")
         self.destroy()
 
