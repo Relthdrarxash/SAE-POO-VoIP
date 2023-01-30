@@ -26,6 +26,8 @@ class Client(tk.Tk):
         self.connexion_serveur = False
 
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Compte tenu de la rapidité des réseaux aujourd'hui, un timeout d'une seconde n'est pas de trop
+        self.server_socket.settimeout(1)
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             self.udp_socket.bind(("", 5001))
@@ -98,7 +100,7 @@ class Client(tk.Tk):
         """Configures the connection to the server using the information entered in the GUI."""
         server_ip = self.server_ip_entry.get()
         server_port = self.server_port_entry.get()
-        self.client_name = self.client_name_entry.get()
+        self.client_name = self.client_name_entry.get().strip()
 
         ip_regex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
 
@@ -106,6 +108,7 @@ class Client(tk.Tk):
             re.match(ip_regex, server_ip)
             and int(server_port) > 1024
             and int(server_port) < 65535
+            and self.client_name != ""
         ):
             # L'entrée est valide, on peut continuer à configurer la connexion
             self.server_ip = server_ip
@@ -114,9 +117,24 @@ class Client(tk.Tk):
                 tk.END,
                 f"Connexion à {self.server_ip}:{self.server_port} en tant que {self.client_name}\n",
             )
-            print("Connecté au serveur")
-            # Connect to the server and send the client's name to register it in the server's database.
-            self.server_socket.connect((self.server_ip, self.server_port))
+            try:
+                # Connect to the server and send the client's name to register it in the server's database.
+                self.server_socket.connect((self.server_ip, self.server_port))
+            except TimeoutError:
+                self.log_text.insert(
+                    tk.END,
+                    "TimeoutError, le serveur n'a pas répondu à temps\n",
+                    "avertissement",
+                )
+                return
+            except Exception as e:
+                self.log_text.insert(
+                    tk.END,
+                    f"Erreur : {e}\n",
+                    "avertissement",
+                )
+                return
+
             data = json.dumps({"command": "REG", "name": self.client_name}).encode(
                 "utf-8"
             )
@@ -139,6 +157,7 @@ class Client(tk.Tk):
 
             # Start listening for incoming call requests in a separate thread.
             threading.Thread(target=self.listen_for_call_requests, daemon=True).start()
+            self.config_button["state"] = tk.DISABLED
 
         elif not re.match(ip_regex, server_ip):
             # L'entrée n'est pas valide, on peut afficher un message d'erreur
@@ -157,6 +176,12 @@ class Client(tk.Tk):
             self.log_text.insert(
                 tk.END,
                 "Le numéro de port doit être compris entre 1024 et 65535",
+                "avertissement",
+            )
+        elif self.client_name == "":
+            self.log_text.insert(
+                tk.END,
+                "Vous devez entrer un nom",
                 "avertissement",
             )
 
@@ -245,14 +270,13 @@ class Client(tk.Tk):
             try:
                 data, addr = self.udp_socket.recvfrom(1024)
                 data = data.decode("utf-8")
+                if data.startswith("START"):
+                    name = data.split(" ")[1]
+                    self.log_text.insert(tk.END, f"Appel reçu de {name}\n")
+                    IncomingCallWindow(self, name)
+                    self.listening_for_calls = False
             except:
                 pass
-
-            if data.startswith("START"):
-                name = data.split(" ")[1]
-                self.log_text.insert(tk.END, f"Appel reçu de {name}\n")
-                IncomingCallWindow(self, name)
-                self.listening_for_calls = False
 
     def accept_call(self, caller_name: str) -> None:
         """Accepts an incoming call request and starts transmitting audio data.
