@@ -4,6 +4,7 @@ import threading
 from typing import Dict, List, Optional, Tuple
 import re
 
+import time
 import pyaudio
 import tkinter as tk
 
@@ -34,6 +35,8 @@ class Client(tk.Tk):
         except socket.error as e:
             print(f"Error binding to port 5001 : {e}")
             self.udp_socket.close()
+            self.destroy()
+            exit(2)
 
         # Initialize the pyaudio recording and playback objects.
         self.FORMAT = pyaudio.paInt16
@@ -73,7 +76,7 @@ class Client(tk.Tk):
             self.config_frame, text="Configure", command=self.configure
         )
         self.config_button.pack(side="left")
-        self.bind("<Return>", self.configure)
+        self.funcid = self.bind("<Return>", self.configure, "+")
 
         self.call_frame = tk.Frame(self)
         self.call_frame.pack()
@@ -148,6 +151,15 @@ class Client(tk.Tk):
                 self.log_text.insert(tk.END, "Enregistrement réussi\n")
                 self.connexion_serveur = True
                 self.call_button["state"] = tk.NORMAL
+                # Start listening for incoming call requests in a separate thread.
+                self.listen_thread = threading.Thread(
+                    target=self.listen_for_call_requests, daemon=True
+                ).start()
+
+                # Désactivation du bouton entrée une fois qu'on a configuré le serveur
+                self.config_button["state"] = tk.DISABLED
+                self.unbind("<Return>", self.funcid)
+
             else:
                 self.log_text.insert(
                     tk.END,
@@ -155,47 +167,43 @@ class Client(tk.Tk):
                     "avertissement",
                 )
 
-            # Start listening for incoming call requests in a separate thread.
-            threading.Thread(target=self.listen_for_call_requests, daemon=True).start()
-            self.config_button["state"] = tk.DISABLED
-
         elif not re.match(ip_regex, server_ip):
             # L'entrée n'est pas valide, on peut afficher un message d'erreur
             self.log_text.insert(
-                tk.END, "L'adresse IP du serveur est invalide", "avertissement"
+                tk.END, "L'adresse IP du serveur est invalide", "avertissement\n"
             )
 
         elif isinstance(server_port, int):
             self.log_text.insert(
                 tk.END,
-                "Le numéro de port est invalide, ce doit être un nombre compris entre 1024 et 65535",
+                "Le numéro de port est invalide, ce doit être un nombre compris entre 1024 et 65535\n",
                 "avertissement",
             )
 
         elif not (int(server_port) > 1024 and int(server_port) < 65535):
             self.log_text.insert(
                 tk.END,
-                "Le numéro de port doit être compris entre 1024 et 65535",
+                "Le numéro de port doit être compris entre 1024 et 65535\n",
                 "avertissement",
             )
         elif self.client_name == "":
             self.log_text.insert(
                 tk.END,
-                "Vous devez entrer un nom",
+                "Vous devez entrer un nom\n",
                 "avertissement",
             )
 
-    def call(self) -> None:
+    def call(self, *args) -> None:
         """Initiates a call to the client with the specified name entered in the GUI.
 
         This method first sends a GET request to the server to retrieve the IP address of the client
         to be called. Then it sends a START request to the called client, containing the caller's name.
         """
 
-        print("-----------------")
-        called_client_name = self.call_name_entry.get()
+        print("Call")
+        called_client_name = self.call_name_entry.get().strip()
         if (
-            called_client_name.strip() != ""
+            called_client_name != "" and called_client_name != self.client_name
         ):  # https://stackoverflow.com/questions/9573244/how-to-check-if-the-string-is-empty/27982561#27982561
 
             # Send a GET request to the server to retrieve the IP address of the called client.
@@ -206,10 +214,10 @@ class Client(tk.Tk):
             )
             response = self.server_socket.recv(1024).decode("utf-8")
             response_data = json.loads(response)
-            called_client_ip = response_data.get("ip")
+            called_client_ip = response_data["ip"]
 
             # If the called client's IP was successfully retrieved, send a START request to initiate the call.
-            if called_client_ip != None:
+            if called_client_ip != "None":
                 self.udp_socket.sendto(
                     f"START {self.client_name}".encode("utf-8"),
                     (called_client_ip, 5001),
@@ -224,6 +232,7 @@ class Client(tk.Tk):
                     f"Impossible d'appeler: {called_client_name} est inconnu de l'annuaire\n",
                     "avertissement",
                 )
+                self.raccrocher()
 
             answer = ""
             self.udp_socket.settimeout(7)
@@ -235,7 +244,8 @@ class Client(tk.Tk):
                     break
                 # pas de décodage possible si donnée vocale
                 except socket.timeout:
-                    threading.Thread(target=self.listen_for_call_requests())
+                    # si erreur, on se remet en écoute
+                    self.raccrocher()
                     return
 
                 except Exception as e:
@@ -248,13 +258,20 @@ class Client(tk.Tk):
                 self.btn_raccrocher["state"] = tk.NORMAL
 
             elif answer.startswith("REJECT"):
-                threading.Thread(
+                self.listen_thread = threading.Thread(
                     target=self.listen_for_call_requests, daemon=True
-                ).start()
-        else:
+                )
+                self.listen_thread.start()
+        elif called_client_name == "":
             self.log_text.insert(
-                tk.END, f"Recipient's name is empty\n", "avertissement"
+                tk.END, f"Le nom du contact ne peut être vide\n", "avertissement"
             )
+        elif called_client_name == self.client_name:
+            self.log_text.insert(
+                tk.END, f"Vous ne pouvez pas vous appelez vous-même\n", "avertissement"
+            )
+        else:
+            self.log_text.insert(tk.END, f"Unknown error\n", "avertissement")
 
     def listen_for_call_requests(self) -> None:
         """Listens for incoming call requests and opens a new window to accept or reject the call.
@@ -268,13 +285,14 @@ class Client(tk.Tk):
         self.listening_for_calls = True
         while self.listening_for_calls:
             try:
-                data, addr = self.udp_socket.recvfrom(1024)
+                data, self.addr = self.udp_socket.recvfrom(1024)
                 data = data.decode("utf-8")
                 if data.startswith("START"):
                     name = data.split(" ")[1]
                     self.log_text.insert(tk.END, f"Appel reçu de {name}\n")
                     IncomingCallWindow(self, name)
                     self.listening_for_calls = False
+                    self.listen_thread.join()
             except:
                 pass
 
@@ -285,7 +303,7 @@ class Client(tk.Tk):
         sends an ACCEPT message to the caller, closes the incoming call window, and starts transmitting
         audio data in a separate thread.
         """
-        self.listening_for_calls = False
+
         self.call_in_progress = True
         self.log_text.insert(tk.END, f"Call from {caller_name} accepted\n")
         self.btn_raccrocher["state"] = tk.NORMAL
@@ -299,14 +317,25 @@ class Client(tk.Tk):
         self.caller_ip = response_data.get("ip")
 
         # If the caller's IP was successfully retrieved, start transmitting audio data.
-        if self.caller_ip:
+        if self.caller_ip == self.addr:
             for _ in range(10):
                 self.udp_socket.sendto("ACCEPT".encode("utf-8"), (self.caller_ip, 5001))
             self.transmit_audio(self.caller_ip)
+
+        elif self.caller_ip != self.addr:
+            self.log_text.insert(
+                tk.END,
+                f"Error starting call with {caller_name}: {caller_name} does not exist\n",
+                "avertissement",
+            )
+            self.listen_thread = threading.Thread(
+                target=self.listen_for_call_requests()
+            )
+            self.listen_thread.start()
         else:
             self.log_text.insert(
                 tk.END,
-                f"Error starting call with {caller_name}: {caller_name} does not exist or is offline\n",
+                f"Error starting call with {caller_name}: {caller_name} does not exist\n",
                 "avertissement",
             )
 
@@ -317,7 +346,7 @@ class Client(tk.Tk):
         when the incoming call window is closed. It sends a REJECT message to the caller and closes the
         incoming call window.
         """
-        self.listening_for_calls = True
+
         self.log_text.insert(tk.END, f"Call from {caller_name} rejected\n")
 
         # Send a REJECT message to the caller.
@@ -335,8 +364,10 @@ class Client(tk.Tk):
                 f"Error rejecting call with {caller_name}: {caller_name} does not exist or is offline\n",
                 "avertissement",
             )
-        self.listening_for_calls = True
-        self.listen_for_call_requests()
+        self.listen_thread = self.listen_thread = threading.Thread(
+            target=self.listen_for_call_requests()
+        )
+        self.listen_thread.start()
 
     def transmit_audio(self, caller_ip: str) -> None:
         """Transmits audio data from the input stream to the recipient's IP address.
@@ -386,8 +417,8 @@ class Client(tk.Tk):
                 self.udp_socket.sendto("CLOSE".encode("utf-8"), (self.caller_ip, 5001))
             self.log_text.insert(tk.END, "Appel terminé\n")
             self.btn_raccrocher["state"] = tk.DISABLED
-            self.listening_for_calls = True
-            threading.Thread(target=self.listen_for_call_requests)
+            self.listen_thread = threading.Thread(target=self.listen_for_call_requests)
+            self.listen_thread.start()
 
     def close(self) -> None:
         """Closes the client's GUI window."""
@@ -396,7 +427,7 @@ class Client(tk.Tk):
             data = json.dumps(
                 {"command": "DISCONNECT", "name": self.client_name}
             ).encode("utf-8")
-            try :
+            try:
                 self.server_socket.sendto(data, (self.server_ip, self.server_port))
                 self.server_socket.close()
             except:

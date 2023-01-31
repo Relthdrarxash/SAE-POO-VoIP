@@ -147,6 +147,7 @@ class Server:
             while self.run_thread:
                 data = client.recv(1024)
                 data = json.loads(data.decode())
+                self.client_name = data["name"]
 
                 if data["command"] == "REG":
                     try:
@@ -169,21 +170,34 @@ class Server:
                             END, f"Error registering user {data['name']} : {e} \n"
                         )
                 elif data["command"] == "GET":
+                    self.log_area.insert(
+                        END,
+                        f"L'utilisateur {self.client_name} souhaite joindre {data['name']}\n",
+                    )
                     result = self.get_ip(data["name"])
                     if result is None:
-                        response = {"ip": None}
+                        response = {"ip": "None"}
+                        self.log_area.insert(
+                            END,
+                            f"{data['name']} est inconnu du système\n",
+                        )
                     else:
                         response = {"ip": result}
+                        response = {"ip": "None"}
+                        self.log_area.insert(
+                            END,
+                            f"{data['name']} est à l'ip : {response}\n",
+                        )
 
                 elif data["command"] == "DISCONNECT":
                     self.delete_user(data["name"])
 
+                print(response)
                 client.send(json.dumps(response).encode())
 
         except Exception as e:
             try:
                 # Handle any exceptions that may occur while handling the client's request
-                print(e)
                 self.delete_user(data["name"])
             except:
                 pass
@@ -203,8 +217,6 @@ class Server:
     def get_ip(self, name: str):
         self.cursor.execute("SELECT * FROM users WHERE username=?", (name,))
         result = self.cursor.fetchone()
-
-        print(result)
 
         if result is None:
             return None

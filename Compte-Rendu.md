@@ -27,6 +27,8 @@
   - [Appel Normal](#appel-normal)
   - [Appel refusé](#appel-refusé)
   - [Double Appel](#double-appel)
+- [Gestion des erreurs](#gestion-des-erreurs)
+  - [Client](#client-1)
 - [Gestion de projet](#gestion-de-projet)
   - [Gantt](#gantt)
 - [Evolutions possibles](#evolutions-possibles)
@@ -112,6 +114,9 @@ sequenceDiagram
     Serveur->>Client A: TCP | {"ip": "{ip Client B}"}
     Note over Client A: Fermeture écoute port 5001
     Client A-->>Client B: UDP | "START client A"
+    Note over Client B: Authentification Client A
+    Client A->>Serveur: TCP | {"command": "GET", "name": "Client B"}
+    Serveur->>Client A: TCP | {"ip": "{ip Client B}"}
     Client B-->>Client A: UDP | "ACCEPT"
     Note over Client B: Fermeture écoute port 5001
     Note over Serveur: Phase d'échange voix simultané
@@ -182,6 +187,23 @@ sequenceDiagram
     Note over Client A: Mise en écoute port 5001
     Note over Client B: Mise en écoute port 5001
 ```
+
+## Gestion des erreurs
+
+Codes de sortie :
+
+- 0 : Code complété correctement
+- 1 : Avertissement (non critique)
+- 2 : Erreur critique
+- 3 : Erreur inconnue
+
+### Client
+
+<!-- omit from toc -->
+#### Si un client est déjà lancé sur un ordinateur et qu'un socket est déjà bind
+
+Alors la fenêtre principale se ferme en annoncant l'erreur dans la sortie standard (Terminal).
+Exit code : 2 (CRITICAL)
 
 ## Gestion de projet
 
