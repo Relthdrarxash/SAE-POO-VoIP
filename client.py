@@ -38,19 +38,6 @@ class Client(tk.Tk):
             self.destroy()
             exit(2)
 
-        # Initialize the pyaudio recording and playback objects.
-        self.FORMAT = pyaudio.paInt16
-        self.CHANNELS = 1
-        self.FREQUENCE = 8000  # en Hertz
-        self.NB_ECHANTILLONS = 512
-        self.pyaudio = pyaudio.PyAudio()
-        self.input_stream = self.pyaudio.open(
-            format=self.FORMAT, channels=self.CHANNELS, rate=self.FREQUENCE, input=True
-        )
-        self.output_stream = self.pyaudio.open(
-            format=self.FORMAT, channels=self.CHANNELS, rate=self.FREQUENCE, output=True
-        )
-
         # Create the GUI elements and set their position and behavior.
         self.title("Client")
         self.log_text = tk.Text(self, width=50, height=10)
@@ -292,7 +279,6 @@ class Client(tk.Tk):
                     self.log_text.insert(tk.END, f"Appel reçu de {name}\n")
                     IncomingCallWindow(self, name)
                     self.listening_for_calls = False
-                    self.listen_thread.join()
             except:
                 pass
 
@@ -312,17 +298,21 @@ class Client(tk.Tk):
         self.server_socket.sendall(
             json.dumps({"command": "GET", "name": caller_name}).encode("utf-8")
         )
+        print("Attente réponse")
         response = self.server_socket.recv(1024).decode("utf-8")
         response_data = json.loads(response)
+        print(response)
+        print(self.addr)
         self.caller_ip = response_data.get("ip")
 
         # If the caller's IP was successfully retrieved, start transmitting audio data.
-        if self.caller_ip == self.addr:
+        # Authentification de l'appelant pour vérifier qu'il n'y ai pas usurpation via une attaque MitM
+        if self.caller_ip == self.addr[0]:
             for _ in range(10):
                 self.udp_socket.sendto("ACCEPT".encode("utf-8"), (self.caller_ip, 5001))
             self.transmit_audio(self.caller_ip)
 
-        elif self.caller_ip != self.addr:
+        elif self.caller_ip != self.addr[0]:
             self.log_text.insert(
                 tk.END,
                 f"Error starting call with {caller_name}: {caller_name} does not exist\n",
@@ -378,6 +368,18 @@ class Client(tk.Tk):
         stream."""
 
         self.caller_ip = caller_ip
+        # Initialize the pyaudio recording and playback objects.
+        self.FORMAT = pyaudio.paInt16
+        self.CHANNELS = 1
+        self.FREQUENCE = 8000  # en Hertz
+        self.NB_ECHANTILLONS = 512
+        self.pyaudio = pyaudio.PyAudio()
+        self.input_stream = self.pyaudio.open(
+            format=self.FORMAT, channels=self.CHANNELS, rate=self.FREQUENCE, input=True
+        )
+        self.output_stream = self.pyaudio.open(
+            format=self.FORMAT, channels=self.CHANNELS, rate=self.FREQUENCE, output=True
+        )
 
         def read_audio():
             while self.call_in_progress:

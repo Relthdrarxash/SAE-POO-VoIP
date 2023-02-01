@@ -189,7 +189,7 @@ class Server:
                         )
 
                 elif data["command"] == "DISCONNECT":
-                    self.delete_user(data["name"])
+                    self.delete_user(self.client_name)
 
                 print(response)
                 client.send(json.dumps(response).encode())
