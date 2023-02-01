@@ -33,6 +33,10 @@
 - [Gestion des erreurs](#gestion-des-erreurs)
   - [Client](#client-1)
 - [Gestion de projet](#gestion-de-projet)
+  - [Répartition des tâches](#répartition-des-tâches)
+  - [Communication](#communication)
+  - [Gestion des risques](#gestion-des-risques)
+  - [Retex](#retex)
   - [Gantt](#gantt)
 - [Evolutions possibles](#evolutions-possibles)
 - [TODO](#todo)
@@ -248,6 +252,8 @@ Exit code : 2 (CRITICAL)
 
 ## Gestion de projet
 
+### Répartition des tâches
+
 Nous avons décidé de diviser le projet en 2 parties:
 
 - Le "Front-end", qui correspond aux interfaces graphiques
@@ -260,23 +266,38 @@ De fait, chacun s'est retrouvé avec des missions claires :
   - Design de l'IHM du serveur
   - Création de l'IHM du serveur
   - Accords avec Quentin concernant les fonctionnalités attendues de l'interface du serveur (logs, bouton de fermeture, affichage du socket d'écoute)
+  - Interfaçage avec le back-end (relier les boutons aux fonctions)
 
 - Damien :
   - Design de l'IHM du client
   - Création de l'IHM du client
   - Accords avec Quentin concernant les fonctionnalités attendues de l'interface du client (logs, bouton de configuration, connexion, appel, raccrochage, pop-up lorsqu'on reçoit un appel)
+  - Interfaçage avec le back-end (relier les boutons aux fonctions)
 
 - Quentin
 
   - Design du fonctionnement de l'application
     - Flux résaux (ports d'écoute et d'envoi)
 
-- Etablissement du protocole téléphonique (Cf. [Ici](#protocoles))
+  - Etablissement du protocole téléphonique (Cf. [Ici](#protocoles))
+  - Gestion des threads
+  - Gestion de la BDD
+  - Gestion des sockets
 
-  - XXX
+### Communication
 
-Dans un premier temps Damien s'occupe de la partie IHM Client, d'un autre côté Mathys s'occupe de la partie IHM Serveur et enfin Quentin s'occupe de gérer le projet et du programme principal pour l'appel.
-Pour la gestion du projet, nous utilisions une interface nommé Discord qui nous a permis de nous envoyer du code, prévoir les séances en autonomie etc.
+Pour ce projet, nous avons utilisé Discord avec des channels spécifiques(Front, Back, IHM-Back Serveur, IHM-Back Client).
+
+Ainsi nous pouvions retrouver nos conversations facilement lorsqu'elles concernaient des points spécifiques.
+
+Nous avions également un channel général pour planifier les séances d'autonomie et nos réunions.
+
+### Gestion des risques
+
+Pour éviter de perdre notre avancée, nous avons utilisé github pour héberger nos codes sources, gérer le versioning et collaborer plus facilement.
+
+### Retex
+
 Ce qu'on a bien réussi: Les interfaces sont designs, d'un côté le serveur met à jour la bed toute les secondes et on a les informations de connexion, ce qui est un avantage.
 Ce qu'on aurait pu améliorer : On aurait pu gérer les différents cas de figure tel qu'un appel intervenant dans l'appel déjà existant entre deux clients par exemple. On aurait aussi pu gérer la sécurité car n'importe qui sur le réseau peut récupérer le flux TCP mais nous avons décidé d'aller au plus simple
 
