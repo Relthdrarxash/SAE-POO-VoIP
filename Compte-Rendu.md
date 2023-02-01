@@ -37,6 +37,10 @@
   - [Communication](#communication)
   - [Gestion des risques](#gestion-des-risques)
   - [Retex](#retex)
+    - [Quentin](#quentin)
+    - [Mathys](#mathys)
+    - [Damien](#damien)
+    - [Groupe](#groupe)
   - [Gantt](#gantt)
 - [Evolutions possibles](#evolutions-possibles)
 - [TODO](#todo)
@@ -242,6 +246,8 @@ Codes de sortie :
 - 2 : Erreur critique
 - 3 : Erreur inconnue
 
+XXX METTRE LES SCREENS
+
 ### Client
 
 <!-- omit from toc -->
@@ -298,6 +304,18 @@ Pour éviter de perdre notre avancée, nous avons utilisé github pour héberger
 
 ### Retex
 
+#### Quentin
+
+#### Mathys
+
+#### Damien
+
+#### Groupe
+
+|Ce qu'on a bien réussi|Ce qu'on aurait pu améliorer|
+|-|-|
+|Les IHM sont modernes efficaces (logs, boutons simples)||
+|Le protocole d'échange|La sécurité des échanges : on aurait pu inclure une fonction de chiffrement de la voix et un échange de clé secrète pour mieux gérer la confidentialité de l'appel|
 Ce qu'on a bien réussi: Les interfaces sont designs, d'un côté le serveur met à jour la bed toute les secondes et on a les informations de connexion, ce qui est un avantage.
 Ce qu'on aurait pu améliorer : On aurait pu gérer les différents cas de figure tel qu'un appel intervenant dans l'appel déjà existant entre deux clients par exemple. On aurait aussi pu gérer la sécurité car n'importe qui sur le réseau peut récupérer le flux TCP mais nous avons décidé d'aller au plus simple
 
@@ -335,8 +353,5 @@ gantt
 
 - Décrire le fonctionnement avec des Screenshots des applications aux différentes étapes
 - Repasser sur les fonctionnalités pour vérifier que tout est correct et bien décrit
-- Décrire les threads et leur gestion
-- Faire un compte rendu de gestion de projet (Gantt, ce qu'on aurait pu faire de mieux, ce qu'il s'est mal passé)
 - Dire ce qu'on a aimé ou pas dans le projet
-- Dire qui a fait quoi
 - Pour Gantt, dire ce qui allait ou pas, ce qui nous a pris le plus de temps etc
