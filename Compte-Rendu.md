@@ -35,8 +35,7 @@
 - [Fonctionnalités](#fonctionnalités)
   - [Serveur](#serveur)
   - [Client](#client-1)
-      - [Documentation fonctionnelle](#documentation-fonctionnelle)
-        - [close](#close)
+    - [Documentation fonctionnelle](#documentation-fonctionnelle)
 - [Evolutions possibles](#evolutions-possibles)
 - [TODO](#todo)
 
@@ -339,10 +338,10 @@ Ce qu'on aurait pu améliorer : On aurait pu gérer les différents cas de figur
 
 - Le client utilise des threads pour écouter les demandes d'appel entrantes en arrière-plan, pour transmettre et recevoir de l'audio en direct lors d'un appel, et pour se déconnecter du serveur en arrière-plan
 
-##### Documentation fonctionnelle
+#### Documentation fonctionnelle
 
 <!-- omit from toc -->
-###### initialisation
+##### initialisation
 
 Cette partie initialise l'interface graphique (GUI) et les sockets pour la connexion au serveur et la transmission audio.
 Il définit des variables pour enregistrer des informations telles que l'IP du serveur, le port du serveur, le nom du client, l'état de la connexion, etc.
@@ -351,7 +350,7 @@ Il initialise également des objets PyAudio pour l'enregistrement et la lecture 
 Enfin, il crée des éléments de l'interface graphique tels que des zones de saisie pour l'IP du serveur, le port du serveur et le nom du client, des boutons pour la configuration et l'appel, etc.
 
 <!-- omit from toc -->
-###### configure
+##### configure
 
 La fonction est appelée pour configurer la connexion avec le serveur de communication à l'aide des informations saisies dans la GUI.
 La fonction effectue les étapes suivantes :
@@ -371,33 +370,33 @@ La fonction effectue les étapes suivantes :
  7. Si les entrées sont invalides, la fonction affiche un message d'erreur spécifiant la cause de l'échec.
 
 <!-- omit from toc -->
-###### call
+##### call
 
 Cette fonction initie un appel à un autre client. La méthode commence par vérifier si le nom du client à appeler n'est ni vide ni identique au nom du client appelant. Ensuite, il envoie une demande "GET" au serveur pour obtenir l'adresse IP du client à appeler. Si l'adresse IP du client appelé a été obtenue avec succès, il envoie une demande "START" au client appelé, contenant le nom de l'appelant. La réponse de l'appelé est ensuite attendue. Si la réponse débute par "ACCEPT", l'appel est considéré comme accepté et la transmission audio est démarrée. Si la réponse débute par "REJECT", l'appel est rejeté et le client revient en mode écoute.
 
 <!-- omit from toc -->
-###### listen_for_call_requests
+##### listen_for_call_requests
 
 Cette fonction écoute les demandes d'appel entrantes en utilisant un socket UDP sur le port 5001. Si une demande d'appel est reçue, elle ouvre une nouvelle fenêtre avec des boutons pour accepter ou refuser l'appel et attend que l'utilisateur accepte ou refuse l'appel. Si l'appel est accepté, elle envoie un message "ACCEPT" à l'appelant et commence la transmission de données audio. La fonction tourne en boucle tant que la variable "self.listening_for_calls" est vraie et s'exécute dans un thread séparé pour permettre une écoute en continu pour les demandes d'appel. Pour la fermer, il faut faire un thread.join() puis mettre la variable "self.listening_for_calls" à False.
 
 <!-- omit from toc -->
-###### accept_call
+##### accept_call
 
 La fonction "accept_call" est utilisée pour accepter une demande d'appel entrante. Lorsque l'utilisateur clique sur le bouton d'acceptation dans la fenêtre d'appel entrant, cette fonction envoie un message "ACCEPT" au correspondant, ferme la fenêtre d'appel entrant et démarre la transmission de données audio dans un thread séparé. La fonction obtient d'abord l'adresse IP du correspondant en envoyant une demande "GET" au serveur avec le nom du correspondant. Si l'adresse IP est correctement récupérée, elle envoie 10 messages "ACCEPT" à l'adresse IP du correspondant et démarre la transmission audio. S'il y a une erreur dans la récupération de l'adresse IP, la fonction affiche un message d'erreur. On envoie 10 messages "ACCEPT" car nous avions des erreurs de non-réception du message par le destinataire car il n'était pas encore prêt à recevoir la réponse du client.
 
 <!-- omit from toc -->
-###### reject_call
+##### reject_call
 
 Cette fonction gère le rejet d'une demande d'appel entrante. Elle est appelée lorsque l'utilisateur clique sur le bouton "Decline" dans la fenêtre d'appel entrant ou lorsque la fenêtre d'appel entrant est fermée.
 La fonction envoie un message "REJECT" à l'appelant en utilisant le socket serveur et en y associant un nom d'utilisateur. Elle reçoit une réponse du serveur contenant les informations de l'appelant, y compris son adresse IP. Si l'adresse IP est présente, elle envoie un message "REJECT" à l'appelant via son socket UDP. Enfin, la fonction démarre un nouveau thread d'écoute pour les demandes d'appel entrantes.
 
 <!-- omit from toc -->
-###### transmit_audio
+##### transmit_audio
 
 La fonction "transmit_audio" est utilisée pour transmettre les données audio du flux d'entrée vers l'adresse IP du destinataire. Elle est appelée dans un thread séparé lorsqu'un appel est accepté. Elle lit en continu les données audio du flux d'entrée et les envoie à l'adresse IP du destinataire en utilisant le socket UDP. Elle écoute également les données audio entrantes sur le port 5001 et les joue via le flux de sortie.
 
 <!-- omit from toc -->
-###### raccrocher
+##### raccrocher
 
 La fonction raccrocher permet de terminer une connexion en cours avec un autre client. Elle vérifie si une connexion est en cours avec la variable call_in_progress, et si c'est le cas, elle exécute les actions suivantes:
 
@@ -407,7 +406,8 @@ La fonction raccrocher permet de terminer une connexion en cours avec un autre c
 -Désactive le bouton "Raccrocher"
 -Lance un nouveau thread pour écouter les demandes d'appel entrantes.
 
-###### close
+<!-- omit from toc -->
+##### close
 
 La fonction "close" est une fonction pour fermer la fenêtre de l'interface graphique du client. La fonction "close" commence par appeler la fonction "raccrocher" pour terminer toute communication en cours. Si le client est connecté au serveur, une requête de déconnexion est envoyée au serveur en utilisant un socket UDP. Le socket est ensuite fermé. Enfin, un message de déconnexion du serveur est inséré dans le journal et la fenêtre de l'interface graphique est détruite.
 
