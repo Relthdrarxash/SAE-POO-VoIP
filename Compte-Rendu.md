@@ -1,4 +1,4 @@
-<!-- markdownlint-disable MD036 MD033 MD024 -->
+<!-- markdownlint-disable MD036 MD033 MD024 MD045 -->
 <!-- omit in toc -->
 # Compte Rendu - SAE POO 2023
 
@@ -27,16 +27,21 @@
   - [Répartition des tâches](#répartition-des-tâches)
   - [Communication](#communication)
   - [Gestion des risques](#gestion-des-risques)
-  - [Retex](#retex)
-    - [Quentin](#quentin)
-    - [Mathys](#mathys)
-    - [Damien](#damien)
 - [Fonctionnalités](#fonctionnalités)
   - [Serveur](#serveur)
   - [Client](#client-1)
     - [Documentation fonctionnelle](#documentation-fonctionnelle)
+    - [Images](#images)
+      - [Configuration initiale](#configuration-initiale)
+      - [Erreur pas de nom](#erreur-pas-de-nom)
+        - [Destinataire inconnu](#destinataire-inconnu)
+      - [Timeout](#timeout)
+      - [IP Invalide](#ip-invalide)
+      - [Port invalide](#port-invalide)
+      - [Plusieurs appels d'affilée](#plusieurs-appels-daffilée)
+      - [Pop-Up appel reçu](#pop-up-appel-reçu)
 - [Evolutions possibles](#evolutions-possibles)
-- [TODO](#todo)
+- [Retex](#retex)
 
  <div style='page-break-before: always;' />
 
@@ -198,21 +203,10 @@ Exit code : 2 (CRITICAL)
 
 ### Gantt
 
-```mermaid
-gantt
-    title Conception d'un client de téléphonie
-    dateFormat  YYYY-MM-DD
-    section Serveur
-        Conception de l'architecture:active, 2021-01-01,2021-01-10
-        Implémentation des fonctionnalités de base:active, 2021-01-11,2021-01-25
-        Test et débogage:active, 2021-01-26,2021-02-01
-    section Client
-        Conception de l'interface utilisateur:active, 2021-02-01,2021-02-10
-        Implémentation des fonctionnalités de base:active, 2021-02-11,2021-03-01
-        Test et débogage:active, 2021-03-02,2021-03-15
-    section Fin
-        Présentation :active, 2021-03-16,2021-03-20
-```
+Diagramme de Gantt :
+
+|![](images/gantt1)|![](images/gantt2)|
+|-|-|
 
 ### Répartition des tâches
 
@@ -257,17 +251,6 @@ Nous avions également un channel général pour planifier les séances d'autono
 ### Gestion des risques
 
 Pour éviter de perdre notre avancée, nous avons utilisé github pour héberger nos codes sources, gérer le versioning et collaborer plus facilement.
-
-### Retex
-
-#### Quentin
-
-#### Mathys
-
-#### Damien
-
-<!-- omit from toc -->
-#### Groupe
 
 |Ce qu'on a bien réussi|Ce qu'on aurait pu améliorer|
 |-|-|
@@ -411,6 +394,65 @@ La fonction raccrocher permet de terminer une connexion en cours avec un autre c
 
 La fonction "close" est une fonction pour fermer la fenêtre de l'interface graphique du client. La fonction "close" commence par appeler la fonction "raccrocher" pour terminer toute communication en cours. Si le client est connecté au serveur, une requête de déconnexion est envoyée au serveur en utilisant un socket UDP. Le socket est ensuite fermé. Enfin, un message de déconnexion du serveur est inséré dans le journal et la fenêtre de l'interface graphique est détruite.
 
+#### Images
+
+##### Configuration initiale
+
+![](images/Client1-Conf.png)
+
+ Au lancement du client, il y a création de différents éléments de l'interface graphique tels que des champs de saisie pour l'adresse IP du serveur, le port du serveur, le nom du client, des boutons pour configurer et appeler, et un champ de texte pour afficher les informations de log. Il définit également les comportements pour ces éléments, comme les fonctions à appeler lorsque les boutons sont cliqués. L’adresse Ip du Serveur et le port sont pré-rentrés.
+On a juste a ajouter notre nom (ici Marc) et cliquer sur configurer (ou la touche "entrée") pour s’enregistrer au sein de la bdd du serveur.
+
+##### Erreur pas de nom
+
+![](images/Client_pas_de_nom.png)
+
+Si on n’inscrit pas de nom lors de la configuration initiale, alors la connexion au serveur est impossible et un message d’erreur est généré dans la fenêtre de log (« Vous devez entrer un nom »)
+
+###### Destinataire inconnu
+
+![](images/Inconnu.png)
+
+Si le destinataire que l'on souhaite joindre est indisponible, alors on reçoit un message du serveur nous annonçant la situation et le client nous affiche une alerte.
+
+##### Timeout
+
+![](images/Timeout_client.png)
+
+Si lors de la connexion, l'adresse entrée est correcte mais n'est pas joignable, alors on indique qu'il y a une erreur de connexion à l'utilisateur (au bout de 1s, délai raisonnable pour une connexion réseau).
+
+##### IP Invalide
+
+![](images/Mauvaise_IP.png)
+
+Si le format de l’adresse ip n’est pas le bon alors la connexion au serveur est impossible et un message d’erreur est généré dans la fenêtre de log (« L’adresse ip est invalide»).
+On a réussi à obtenir ça grâce à une expression régulière (REgex) qui filtre les IP possibles.
+
+##### Port invalide
+
+![](images/Mauvais_port.png)
+
+Si on modifie le port déjà pré-renté et qu’il n’est pas compris entre 1024 et 65535 alors la connexion au serveur est impossible et un message d’erreur est généré dans la fenêtre de log (« Le numéro de port doit être compris entre 1024 et 65535 »).
+
+##### Plusieurs appels d'affilée
+
+![](images/Serveur_plusieurs_apl.png)
+
+Lorsqu'un client envoie une demande d'appel, le serveur reçoit sa requête de demande d'IP. Il sait alors qu'un appel va bientôt être passé. Il sait qu'un appel a été accepté si il reçoit une demande d'IP de celui qui a été appelé au nom de celui qui appel (authentification de l'IP).
+
+![](images/client_plusieurs_apl.png)
+
+Côté client, tout se passe normalement lorsqu'un appel est passé, on peut raccrocher et relancer un appel correctement.
+
+##### Pop-Up appel reçu
+
+![](images/Pop-up.png)
+
+Voici la pop-up reçue. Si un appel est accepté alors on clique sur accepter puis elle se ferme.
+
+Au contraire, si on rejette l'appel ou qu'on attend trop longtemps, elle se ferme et ne donne pas suite à l'appel.
+Du côté de l'appellant, si le délai a expiré (7s), alors on considère que l'appel ne passera pas et on se remet en écoute, l'utilisateur peut passer un nouvel appel.
+
 ## Evolutions possibles
 
 - Ajout d'une fonctionnalité de chat en direct pendant un appel: Il serait possible d'ajouter une fonctionnalité de chat en direct pendant un appel, qui permettrait aux utilisateurs de communiquer par écrit en plus de parler.
@@ -423,9 +465,13 @@ La fonction "close" est une fonction pour fermer la fenêtre de l'interface grap
 
 - Ajout de fonctionnalités de personnalisation: Il serait possible d'ajouter des fonctionnalités de personnalisation pour permettre aux utilisateurs de personnaliser l'apparence de l'application, comme changer les couleurs, les polices, etc.
 
-## TODO
+## Retex
 
-- Décrire le fonctionnement avec des Screenshots des applications aux différentes étapes
-- Repasser sur les fonctionnalités pour vérifier que tout est correct et bien décrit
-- Dire ce qu'on a aimé ou pas dans le projet
-- Pour Gantt, dire ce qui allait ou pas, ce qui nous a pris le plus de temps etc
+Globalement, nous avons trouvé que ce projet était intéressant. Tant à la conception du protocole d'échange qu'à la conception des interfaces et la gestion des erreurs (fréquentes tant elles peuvent venir de n'importe où (voix, IHM ou réseau)). Toutefois, nous aurions apprécié avoir plus de guidance au début de ce projet pour mieux cerner ce que l'on devait faire et non simplement "un application de VoIP". A savoir : si l'application devait être peer-to-peer ou centralisée, si on devait respecter un protocole spécifique (SIP) ou en créer un, une convention sur les ports, etc. Nous avons pu répondre à ces questions grâce à l'enseignant au milieu du projet mais nous aurions préféré pouvoir balayer celles-ci dès le départ. Nous aurions pu gagner quelques semaines de travail au lieu de chercher à avoir les réponses auprès de l'enseignant.
+Une autre difficulté était de gérer le temps. En effet, avec l'alternance, les cours à l'IUT sont tous condensés et nous n'avons pas beaucoup de temps après les cours pour travailler en profondeur sur tous les projets.
+
+Nous conservons pour ce projet une appréciation positive.
+
+Quentin Noilou
+Damien Rocabois
+Mathys Person
