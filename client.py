@@ -411,21 +411,24 @@ class Client(tk.Tk):
             try:
                 self.input_stream.stop_stream()
                 self.output_stream.stop_stream()
-                self.input_stream.close()
-                self.output_stream.close()
-            except:
-                pass
-            for _ in range(5):
-                self.udp_socket.sendto("CLOSE".encode("utf-8"), (self.caller_ip, 5001))
-            self.log_text.insert(tk.END, "Appel terminé\n")
-            self.btn_raccrocher["state"] = tk.DISABLED
-            self.listen_thread = threading.Thread(target=self.listen_for_call_requests)
-            self.listen_thread.start()
+            finally:
+                for _ in range(5):
+                    self.udp_socket.sendto(
+                        "CLOSE".encode("utf-8"), (self.caller_ip, 5001)
+                    )
+                self.log_text.insert(tk.END, "Appel terminé\n")
+                self.btn_raccrocher["state"] = tk.DISABLED
+                self.listen_thread = threading.Thread(
+                    target=self.listen_for_call_requests
+                )
+                self.listen_thread.start()
 
     def close(self) -> None:
         """Closes the client's GUI window."""
         try:
             self.raccrocher()
+            self.input_stream.close()
+            self.output_stream.close()
             if self.connexion_serveur:
                 data = json.dumps(
                     {"command": "DISCONNECT", "name": self.client_name}
