@@ -175,7 +175,7 @@ class Server:
                         f"L'utilisateur {self.client_name} souhaite joindre {data['name']}\n",
                     )
                     result = self.get_ip(data["name"])
-                    if result is None:
+                    if result == None:
                         response = {"ip": "None"}
                         self.log_area.insert(
                             END,
@@ -183,7 +183,6 @@ class Server:
                         )
                     else:
                         response = {"ip": result}
-                        response = {"ip": "None"}
                         self.log_area.insert(
                             END,
                             f"{data['name']} est à l'ip : {response}\n",

@@ -422,18 +422,22 @@ class Client(tk.Tk):
 
     def close(self) -> None:
         """Closes the client's GUI window."""
-        self.raccrocher()
-        if self.connexion_serveur:
-            data = json.dumps(
-                {"command": "DISCONNECT", "name": self.client_name}
-            ).encode("utf-8")
-            try:
-                self.server_socket.sendto(data, (self.server_ip, self.server_port))
-                self.server_socket.close()
-            except:
-                pass
-        self.log_text.insert(tk.END, "Déconnexion du serveur\n", "avertissement")
-        self.destroy()
+        try:
+            self.raccrocher()
+            if self.connexion_serveur:
+                data = json.dumps(
+                    {"command": "DISCONNECT", "name": self.client_name}
+                ).encode("utf-8")
+                try:
+                    self.server_socket.sendto(data, (self.server_ip, self.server_port))
+                    self.server_socket.close()
+                except:
+                    pass
+            self.log_text.insert(tk.END, "Déconnexion du serveur\n", "avertissement")
+            self.destroy()
+            exit(0)
+        except:
+            exit(1)
 
 
 class IncomingCallWindow(tk.Toplevel):
