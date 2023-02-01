@@ -382,10 +382,13 @@ class Client(tk.Tk):
         )
 
         def read_audio():
-            while self.call_in_progress:
-                # Read audio data from the input stream and send it to the recipient.
-                data = self.input_stream.read(self.NB_ECHANTILLONS)
-                self.udp_socket.sendto(data, (self.caller_ip, 5001))
+            try:
+                while self.call_in_progress:
+                    # Read audio data from the input stream and send it to the recipient.
+                    data = self.input_stream.read(self.NB_ECHANTILLONS)
+                    self.udp_socket.sendto(data, (self.caller_ip, 5001))
+            except:
+                pass
 
         def write_audio():
             while self.call_in_progress:

@@ -194,6 +194,8 @@ class Server:
                 print(response)
                 client.send(json.dumps(response).encode())
 
+        except TypeError:
+            pass
         except Exception as e:
             try:
                 # Handle any exceptions that may occur while handling the client's request
