@@ -31,7 +31,6 @@
     - [Quentin](#quentin)
     - [Mathys](#mathys)
     - [Damien](#damien)
-    - [Groupe](#groupe)
 - [Fonctionnalités](#fonctionnalités)
   - [Serveur](#serveur)
   - [Client](#client-1)
@@ -267,6 +266,7 @@ Pour éviter de perdre notre avancée, nous avons utilisé github pour héberger
 
 #### Damien
 
+<!-- omit from toc -->
 #### Groupe
 
 |Ce qu'on a bien réussi|Ce qu'on aurait pu améliorer|
