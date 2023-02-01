@@ -23,6 +23,9 @@
     - [Appel en direct](#appel-en-direct)
     - [Interface utilisateur](#interface-utilisateur)
     - [Utilisation de thread](#utilisation-de-thread)
+- [Protocoles](#protocoles)
+  - [Protocole Communication serveur](#protocole-communication-serveur)
+  - [Protocole Communication client](#protocole-communication-client)
 - [Diagrammes des flux](#diagrammes-des-flux)
   - [Appel Normal](#appel-normal)
   - [Appel refusé](#appel-refusé)
@@ -90,6 +93,44 @@
 #### Utilisation de thread
 
 - Le client utilise des threads pour écouter les demandes d'appel entrantes en arrière-plan, pour transmettre et recevoir de l'audio en direct lors d'un appel, et pour se déconnecter du serveur en arrière-plan
+
+## Protocoles
+
+Voici le protocole que nous avons mis en place :
+
+### Protocole Communication serveur
+
+Via le protocole TCP :
+
+`{"command": "GET", "name": nom_destinataire}` : Récupère l'adresse IP associée au nom demandé, si le client n'existe pas, retourne "None".
+
+Réponses possibles :
+
+- `{"ip": "None"}`
+- `{"ip": 127.0.0.1}`
+
+`{"command": "REG", "name": nom_client}` : Envoie une demande d'enregistrement au serveur avec notre nom. Le serveur récupère automatiquement notre ip depuis le paquet qu'il reçoit (en-tête IP).
+
+Réponses possibles :
+
+- `{"ack": "Registered successfully"}` : l'enregistrement s'est bien déroulé dans la BDD
+- `{"ack": "Error Registering"}` : la BDD n'a pas pu enregistrer notre nom
+- `{"ack": "Error"}` : le serveur a buggé pour nous enregistrer
+
+`{"command": "DISCONNECT", "name": nom_client}` : permet la déconnexion propre du client connecté au serveur (fermeture thread et socket de connexion, suppression de l'entrée dans la BDD)
+
+### Protocole Communication client
+
+Lorsqu'on envoie une demande d'appel, le socket d'écoute se ferme.
+De même, lorsqu'on reçoit une demande d'appel, on ferme notre socket d'écoute le temps de répondre
+
+`"START nom_appellant"` : Envoie une demande d'appel à l'appelé après avoir récupéré son IP à partir du serveur, ferme l'écoute sur le socket
+
+`"ACCEPT"` : Accepte une demande d'appel reçu, ouvre l'échange d'audio (fonction transmit_audio())
+
+`"REJECT"`: Rejette une demande d'appel reçu, rouvre l'écoute sur le socket
+
+`"CLOSE"` : Permet de raccrocher (fermeture socket et pyaudio en écoute et écriture), rouvre l'écoute sur le socket
 
 ## Diagrammes des flux
 
@@ -206,6 +247,38 @@ Alors la fenêtre principale se ferme en annoncant l'erreur dans la sortie stand
 Exit code : 2 (CRITICAL)
 
 ## Gestion de projet
+
+Nous avons décidé de diviser le projet en 2 parties:
+
+- Le "Front-end", qui correspond aux interfaces graphiques
+- Le "Back-end", qui correspond aux gestions de la base de données, des flux réseaux, des threads etc...
+
+De fait, chacun s'est retrouvé avec des missions claires :
+
+- Mathys :
+
+  - Design de l'IHM du serveur
+  - Création de l'IHM du serveur
+  - Accords avec Quentin concernant les fonctionnalités attendues de l'interface du serveur (logs, bouton de fermeture, affichage du socket d'écoute)
+
+- Damien :
+  - Design de l'IHM du client
+  - Création de l'IHM du client
+  - Accords avec Quentin concernant les fonctionnalités attendues de l'interface du client (logs, bouton de configuration, connexion, appel, raccrochage, pop-up lorsqu'on reçoit un appel)
+
+- Quentin
+
+  - Design du fonctionnement de l'application
+    - Flux résaux (ports d'écoute et d'envoi)
+
+- Etablissement du protocole téléphonique (Cf. [Ici](#protocoles))
+
+  - XXX
+
+Dans un premier temps Damien s'occupe de la partie IHM Client, d'un autre côté Mathys s'occupe de la partie IHM Serveur et enfin Quentin s'occupe de gérer le projet et du programme principal pour l'appel.
+Pour la gestion du projet, nous utilisions une interface nommé Discord qui nous a permis de nous envoyer du code, prévoir les séances en autonomie etc.
+Ce qu'on a bien réussi: Les interfaces sont designs, d'un côté le serveur met à jour la bed toute les secondes et on a les informations de connexion, ce qui est un avantage.
+Ce qu'on aurait pu améliorer : On aurait pu gérer les différents cas de figure tel qu'un appel intervenant dans l'appel déjà existant entre deux clients par exemple. On aurait aussi pu gérer la sécurité car n'importe qui sur le réseau peut récupérer le flux TCP mais nous avons décidé d'aller au plus simple
 
 ### Gantt
 
